@@ -31,8 +31,8 @@ def main():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--network', type=str, required=True, default='resnet50', help="Torchvision network name")
-    parser.add_argument('--batch-size', type=int, required=True, default=64, help="Batchsize of the model.")
-    parser.add_argument('--iterations', type=int, required=True, default=10, help="Number of iterations to run;")
+    parser.add_argument('--batch-size', type=int, required=False, default=64, help="Batchsize of the model.")
+    parser.add_argument('--iterations', type=int, required=False, default=10, help="Number of iterations to run;")
 
     args = parser.parse_args()
 
