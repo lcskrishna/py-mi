@@ -15,7 +15,7 @@ def run_layerwise_benchmark(network_name, batch_size, iterations, is_gpu_availab
     print ("INFO: Benchmark will be run with following details : ")
     print ("Network : {}, Batchsize : {}, Iterations : {}".format(network_name, batch_size, iterations))
     net = torchvision.models.alexnet()
-    input_size = [1, 3, 224, 224]
+    input_size = [2, 3, 224, 224]
     is_debug = True
     layer_timer = mi.PyModuleInstrumentation(net, input_size, iterations, is_debug)
     layer_timer.generate_layerwise_profile_info()
