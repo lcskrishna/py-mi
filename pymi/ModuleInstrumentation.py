@@ -55,7 +55,8 @@ class PyModuleInstrumentation():
         return layer_info
 
     def generate_time(self, layer, x, iter=10):
-        inp = Variable(x, requires_grad=True)
+        #inp = Variable(x, requires_grad=True)
+        inp = x
         if self.gpu_available:
             inp = inp.cuda()
             layer = layer.cuda()
@@ -70,15 +71,30 @@ class PyModuleInstrumentation():
             output = layer(inp)
         torch.cuda.synchronize()
         forward_time = time.time() - start_time
+        print ("DEBUG: Finished forward computation")
        
-
-        output_warmup1.sum().backward() 
-        ## Backward time computation.
+        #grad_output = output_warmup2.clone().normal_()
+        #grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3], requires_grad=True)
+        #if self.gpu_available:
+        #    grad_output = grad_output.cuda()
+        #print ("INFO: computing backward path.")
+        #if isinstance(layer, nn.ReLU):
+        #    print ("RELU Backward")
+        #    #output_warmup2.backward(grad_output, retain_graph=True)
+        #    output_warmup2.sum().backward()
+        #    print ("RELU backward finished.")
+        #output_warmup2.backward(grad_output, retain_graph=True)
+        ### Backward time computation.
         #torch.cuda.synchronize()
         #start_time_back = time.time()
         #for j in range(iter):
-        #    output_warmup1.backward()
-        return forward_time, output_size
+        #    output_warmup2.backward(grad_output, retain_graph=True)
+        #torch.cuda.synchronize()
+        #backward_time = time.time() - start_time_back
+        #
+        #print ("DEBUG: Finished backward computation.") 
+        backward_time = 0
+        return forward_time, backward_time, output_size
         
     def generate_layerwise_profile_info(self):
         
@@ -91,7 +107,7 @@ class PyModuleInstrumentation():
         net_layer_data = {}
         num_linear_layer = 0
 
-        for i in range(1):
+        for i in range(len(layer_info)):
             layer_data['layer_num'] = i
             layer = layer_info[i]
             if i != 0:
@@ -100,38 +116,40 @@ class PyModuleInstrumentation():
                 
                 if (len(prev_output_size) == 4):
                     x = torch.randn(prev_output_size[0], prev_output_size[1], prev_output_size[2], prev_output_size[3])
-                    if self.gpu_available():
+                    if self.gpu_available:
                         x = x.cuda()
                 elif (len(prev_output_size) == 3):
                     x = torch.randn(prev_output_size[0], prev_output_size[1], prev_output_size[2])
-                    if self.gpu_available():
+                    if self.gpu_available:
                         x = x.cuda()
                 elif (len(prev_output_size) == 2):
                     x = torch.randn(prev_output_size[0], prev_output_size[1])
-                    if self.gpu_available():
+                    if self.gpu_available:
                         x = x.cuda()
                 if (isinstance(layer, nn.Linear) and num_linear_layer == 0):
                     if len(prev_output_size) == 4:
-                        x = x.view(-1, prev_output_size[0] * prev_output_size[1] * prev_output_size[2] * prev_output_size[3])
-                        if self.gpu_available():
+                        x = x.view(-1, prev_output_size[1] * prev_output_size[2] * prev_output_size[3])
+                        if self.gpu_available:
                             x = x.cuda()
                     if len(prev_output_size) == 3:
-                        x = x.view(-1, prev_output_size[0] * prev_output_size[1] * prev_output_size[2])
-                        if self.gpu_available():
+                        x = x.view(-1,  prev_output_size[1] * prev_output_size[2])
+                        if self.gpu_available:
                             x = x.cuda()
                     if len(prev_output_size) == 2:
-                        x = x.view(-1, prev_output_size[0] * prev_output_size[1])
-                        if self.gpu_available():
+                        x = x.view(-1, prev_output_size[1])
+                        if self.gpu_available:
                             x = x.cuda()
                     num_linear_layer = num_linear_layer + 1
             
             print ("------------------------ Layer num {} ---------------------- ".format(i))
             print (layer)
-            forward_time , output_size = self.generate_time(layer, x)
+            forward_time , backward_time, output_size = self.generate_time(layer, x)
             layer_data['forward_time'] = forward_time
+            layer_data['backward_time'] = backward_time
             layer_data['input_size'] = x.size()
             layer_data['output_size'] = output_size
             net_layer_data[i] = layer_data
             print ("Forward Time is {}".format(forward_time))
+            print ("Backward Time is : {}".format(backward_time))
 
         return net_layer_data
