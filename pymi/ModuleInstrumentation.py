@@ -27,7 +27,7 @@ class PyModuleInstrumentation():
         return is_gpu_available
 
     def get_input(self):
-        inp = torch.randn(self.input_size[0], self.input_size[1], self.input_size[2], self.input_size[3])
+        inp = torch.randn(self.input_size[0], self.input_size[1], self.input_size[2], self.input_size[3], requires_grad=True)
         if self.gpu_available :
             inp = inp.cuda()
         return inp
@@ -54,9 +54,10 @@ class PyModuleInstrumentation():
         self.getLayers(self.net, layer_info)
         return layer_info
 
-    def generate_time(self, layer, x, iter=10):
+    '''
+    def generate_time(self, layer, inp, iter=10):
         #inp = Variable(x, requires_grad=True)
-        inp = x
+        #inp = x
         if self.gpu_available:
             inp = inp.cuda()
             inp = inp.requires_grad_(True)
@@ -74,90 +75,104 @@ class PyModuleInstrumentation():
         torch.cuda.synchronize()
         forward_time = time.time() - start_time
         print ("OK: Finished forward computation")
-
-        ## Backward time computation.
-        print ("INFO: running the backward warmup")
         backward_time = 0
         output_size = output.size()
-        if (len(output_size) == 4):
-            grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3])
-        if (len(output_size) == 3):
-            grad_output = torch.randn(output_size[0], output_size[1], output_size[2])
-        if (len(output_size) == 2):
-            grad_output = torch.randn(output_size[0], output_size[1])
-        if self.gpu_available:
-            grad_output = grad_output.cuda()
-        
-        if isinstance(layer, nn.ReLU) or isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AdaptiveAvgPool2d) :
-            #output_warmup2.sum().backward(retain_graph=True)
-            #print ("OK: Finished backward warmup")
-            #print ("INFO: Running backward path.")
-            #torch.cuda.synchronize()
-            #start_time_bk = time.time()
-            #for j in range(iter):
-            #    output_warmup2.backward(grad_output, retain_graph=True)
-            #torch.cuda.synchronize()
-            #backward_time = time.time() - start_time_bk
-            continue
-            torch.cuda.synchronize()
-            start_time = time.time()
-            print ("Backward started")
-            output_warmup2.sum().backward(retain_graph=True)
-            print ("Backward finished.")
-            torch.cuda.synchronize()
-            print ("Total time is {}".format(time.time() - start_time))
-            
-            
-            output_size = output.size()
-            grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3])
-            if torch.cuda.is_available():
-                grad_output = grad_output.cuda()
-            
-            torch.cuda.synchronize()
-            val = time.time()
-            print ("Running backward")
-            
-            for i in range(2):
-                output.backward(grad_output, retain_graph=True)
-            
-            print ("Backward finished.")
-            torch.cuda.synchronize()
 
-        elif isinstance(layer, nn.Dropout):
-            return forward_time, 0, output_size
-        else :
-            output_warmup2.backward(grad_output, retain_graph=True)
-            print ("OK: Finished backward warmup.")
-            print ("INFO: Running backward.")
-            torch.cuda.synchronize()     
-            start_time_bck = time.time()
-            for j in range(iter):
-                output_warmup2.backward(grad_output, retain_graph=True)
-            torch.cuda.synchronize()
-            backward_time = time.time() - start_time_bck
-            print ("OK: Finished backward path.")
- 
-        #grad_output = output_warmup2.clone().normal_()
-        #grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3], requires_grad=True)
+        ## Backward time computation.
+        #print ("INFO: running the backward warmup")
+        #backward_time = 0
+        #output_size = output.size()
+        #if (len(output_size) == 4):
+        #    grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3])
+        #if (len(output_size) == 3):
+        #    grad_output = torch.randn(output_size[0], output_size[1], output_size[2])
+        #if (len(output_size) == 2):
+        #    grad_output = torch.randn(output_size[0], output_size[1])
         #if self.gpu_available:
         #    grad_output = grad_output.cuda()
-        #print ("INFO: computing backward path.")
-        #if isinstance(layer, nn.ReLU):
-        #    print ("RELU Backward")
-        #    #output_warmup2.backward(grad_output, retain_graph=True)
-        #    output_warmup2.sum().backward()
-        #    print ("RELU backward finished.")
-        #output_warmup2.backward(grad_output, retain_graph=True)
-        ### Backward time computation.
-        #torch.cuda.synchronize()
-        #start_time_back = time.time()
-        #for j in range(iter):
-        #    output_warmup2.backward(grad_output, retain_graph=True)
-        #torch.cuda.synchronize()
-        #backward_time = time.time() - start_time_back
         #
-        #print ("DEBUG: Finished backward computation.") 
+        #if isinstance(layer, nn.ReLU) or isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AdaptiveAvgPool2d) :
+        #    torch.cuda.synchronize()
+        #    start_time = time.time()
+        #    print ("Backward warmup started")
+        #    output_warmup2.sum().backward(retain_graph=True)
+        #    print ("Backward finished.")
+        #    torch.cuda.synchronize()
+        #    print ("Total time warmup backward is {}".format(time.time() - start_time))
+        #    
+        #    
+        #    output_size = output.size()
+        #    grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3])
+        #    if torch.cuda.is_available():
+        #        grad_output = grad_output.cuda()
+        #    
+        #    torch.cuda.synchronize()
+        #    val = time.time()
+        #    print ("Running backward")
+        #    
+        #    for i in range(2):
+        #        output.backward(grad_output, retain_graph=True)
+        #    
+        #    print ("Backward finished.")
+        #    torch.cuda.synchronize()
+
+        #elif isinstance(layer, nn.Dropout):
+        #    return forward_time, 0, output_size
+        #else :
+        #    output_warmup2.backward(grad_output, retain_graph=True)
+        #    print ("OK: Finished backward warmup.")
+        #    print ("INFO: Running backward.")
+        #    torch.cuda.synchronize()     
+        #    start_time_bck = time.time()
+        #    for j in range(iter):
+        #        output_warmup2.backward(grad_output, retain_graph=True)
+        #    torch.cuda.synchronize()
+        #    backward_time = time.time() - start_time_bck
+        #    print ("OK: Finished backward path.")
+ 
+        ##grad_output = output_warmup2.clone().normal_()
+        ##grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3], requires_grad=True)
+        ##if self.gpu_available:
+        ##    grad_output = grad_output.cuda()
+        ##print ("INFO: computing backward path.")
+        ##if isinstance(layer, nn.ReLU):
+        ##    print ("RELU Backward")
+        ##    #output_warmup2.backward(grad_output, retain_graph=True)
+        ##    output_warmup2.sum().backward()
+        ##    print ("RELU backward finished.")
+        ##output_warmup2.backward(grad_output, retain_graph=True)
+        #### Backward time computation.
+        ##torch.cuda.synchronize()
+        ##start_time_back = time.time()
+        ##for j in range(iter):
+        ##    output_warmup2.backward(grad_output, retain_graph=True)
+        ##torch.cuda.synchronize()
+        ##backward_time = time.time() - start_time_back
+        ##
+        ##print ("DEBUG: Finished backward computation.") 
         return forward_time, backward_time, output_size
+        '''
+
+    def generate_time(self, layer, x, iter=10):
+        if self.gpu_available:
+            x = x.cuda()
+            layer = layer.cuda()
+        
+        output_wm1 = layer(x)
+        output_wm2 = layer(x)
+        
+        print ("INFO: Running forward .. ")
+        torch.cuda.synchronize()
+        start_time = time.time()
+        for j in range(iter):
+            output = layer(x)
+        torch.cuda.synchronize()
+        forward_time = time.time() - start_time
+        output_size = output_wm2.size()
+        
+        backward_time = 0
+        return forward_time, backward_time, output_size
+            
         
     def generate_layerwise_profile_info(self):
         
