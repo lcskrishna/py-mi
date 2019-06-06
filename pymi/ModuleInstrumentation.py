@@ -54,105 +54,6 @@ class PyModuleInstrumentation():
         self.getLayers(self.net, layer_info)
         return layer_info
 
-    '''
-    def generate_time(self, layer, inp, iter=10):
-        #inp = Variable(x, requires_grad=True)
-        #inp = x
-        if self.gpu_available:
-            inp = inp.cuda()
-            inp = inp.requires_grad_(True)
-            layer = layer.cuda()
-        output_warmup1 = layer(inp)
-        output_warmup2 = layer(inp)
-        output_size = output_warmup1.size()
-
-        ## Forward time computation.
-        print ("INFO: Running forward path..")
-        torch.cuda.synchronize()
-        start_time = time.time()
-        for j in range(iter):
-            output = layer(inp)
-        torch.cuda.synchronize()
-        forward_time = time.time() - start_time
-        print ("OK: Finished forward computation")
-        backward_time = 0
-        output_size = output.size()
-
-        ## Backward time computation.
-        #print ("INFO: running the backward warmup")
-        #backward_time = 0
-        #output_size = output.size()
-        #if (len(output_size) == 4):
-        #    grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3])
-        #if (len(output_size) == 3):
-        #    grad_output = torch.randn(output_size[0], output_size[1], output_size[2])
-        #if (len(output_size) == 2):
-        #    grad_output = torch.randn(output_size[0], output_size[1])
-        #if self.gpu_available:
-        #    grad_output = grad_output.cuda()
-        #
-        #if isinstance(layer, nn.ReLU) or isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AdaptiveAvgPool2d) :
-        #    torch.cuda.synchronize()
-        #    start_time = time.time()
-        #    print ("Backward warmup started")
-        #    output_warmup2.sum().backward(retain_graph=True)
-        #    print ("Backward finished.")
-        #    torch.cuda.synchronize()
-        #    print ("Total time warmup backward is {}".format(time.time() - start_time))
-        #    
-        #    
-        #    output_size = output.size()
-        #    grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3])
-        #    if torch.cuda.is_available():
-        #        grad_output = grad_output.cuda()
-        #    
-        #    torch.cuda.synchronize()
-        #    val = time.time()
-        #    print ("Running backward")
-        #    
-        #    for i in range(2):
-        #        output.backward(grad_output, retain_graph=True)
-        #    
-        #    print ("Backward finished.")
-        #    torch.cuda.synchronize()
-
-        #elif isinstance(layer, nn.Dropout):
-        #    return forward_time, 0, output_size
-        #else :
-        #    output_warmup2.backward(grad_output, retain_graph=True)
-        #    print ("OK: Finished backward warmup.")
-        #    print ("INFO: Running backward.")
-        #    torch.cuda.synchronize()     
-        #    start_time_bck = time.time()
-        #    for j in range(iter):
-        #        output_warmup2.backward(grad_output, retain_graph=True)
-        #    torch.cuda.synchronize()
-        #    backward_time = time.time() - start_time_bck
-        #    print ("OK: Finished backward path.")
- 
-        ##grad_output = output_warmup2.clone().normal_()
-        ##grad_output = torch.randn(output_size[0], output_size[1], output_size[2], output_size[3], requires_grad=True)
-        ##if self.gpu_available:
-        ##    grad_output = grad_output.cuda()
-        ##print ("INFO: computing backward path.")
-        ##if isinstance(layer, nn.ReLU):
-        ##    print ("RELU Backward")
-        ##    #output_warmup2.backward(grad_output, retain_graph=True)
-        ##    output_warmup2.sum().backward()
-        ##    print ("RELU backward finished.")
-        ##output_warmup2.backward(grad_output, retain_graph=True)
-        #### Backward time computation.
-        ##torch.cuda.synchronize()
-        ##start_time_back = time.time()
-        ##for j in range(iter):
-        ##    output_warmup2.backward(grad_output, retain_graph=True)
-        ##torch.cuda.synchronize()
-        ##backward_time = time.time() - start_time_back
-        ##
-        ##print ("DEBUG: Finished backward computation.") 
-        return forward_time, backward_time, output_size
-        '''
-
     ### Note: This method is created to avoid Leaf variable was used in an inplace operation issue
     ## Idea is leaf variable (i.e. variable /tensor created directly) can't be used for inplace operation.
     def get_intermediate_input(self, input_size):
@@ -196,6 +97,19 @@ class PyModuleInstrumentation():
                  a = a.cuda()
             return a
 
+    def compute_backward_differently(self, layer):
+        is_different = False
+        if isinstance(layer, nn.ReLU):
+            is_different=True
+        elif isinstance(layer, nn.MaxPool2d):
+            is_different = True
+        elif isinstance(layer, nn.AdaptiveAvgPool2d):
+            is_different = True
+        elif isinstance(layer, nn.Dropout):
+            is_different = True
+
+        return is_different
+
     def generate_time(self, layer, x, iter=10):
         if self.gpu_available:
             x = x.cuda()
@@ -214,7 +128,7 @@ class PyModuleInstrumentation():
         output_size = output_wm2.size()
         
         backward_time = 0
-        if isinstance(layer, nn.ReLU) or isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AdaptiveAvgPool2d) or isinstance(layer, nn.Dropout):
+        if self.compute_backward_differently(layer):
             m = nn.Sequential(layer)
             if self.gpu_available:
                 m = m.cuda()

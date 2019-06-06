@@ -19,8 +19,7 @@ def run_layerwise_benchmark(network_name, batch_size, iterations, is_gpu_availab
     is_debug = True
     layer_timer = mi.PyModuleInstrumentation(net, input_size, iterations, is_debug)
     layer_timer.generate_layerwise_profile_info()
-    print ("ERROR: Need to complete the implementation")
-    sys.exit(1)    
+    print ("OK: Finished generating layerwise benchmark for network : {}".format(network_name))
 
 def main():
     network_name = args.network
