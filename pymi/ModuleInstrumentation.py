@@ -214,7 +214,7 @@ class PyModuleInstrumentation():
         output_size = output_wm2.size()
         
         backward_time = 0
-        if isinstance(layer, nn.ReLU) or isinstance(layer, nn.MaxPool2d):
+        if isinstance(layer, nn.ReLU) or isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AdaptiveAvgPool2d):
             m = nn.Sequential(layer)
             if self.gpu_available:
                 m = m.cuda()
