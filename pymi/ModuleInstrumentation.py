@@ -42,7 +42,7 @@ class PyModuleInstrumentation():
         for name, sub_module in sub_modules.items():
             if sub_module is None or isinstance(sub_module, nn.Module) is False:
                 break
-            if isinstance(sub_module, nn.Container) or isinstance(sub_module, nn.Sequential) or isinstance(sub_module, torchvision.models.resnet.Bottleneck):
+            if isinstance(sub_module, nn.Container) or isinstance(sub_module, nn.Sequential):
                 self.getLayers(sub_module, layer_info)
             else:
                 layer_info.append(sub_module)
@@ -153,6 +153,49 @@ class PyModuleInstrumentation():
         return forward_time, backward_time, output_size
         '''
 
+    ### Note: This method is created to avoid Leaf variable was used in an inplace operation issue
+    ## Idea is leaf variable (i.e. variable /tensor created directly) can't be used for inplace operation.
+    def get_intermediate_input(self, input_size):
+        if len(input_size) == 4:
+            a = torch.randn(input_size[0], input_size[1], input_size[2], input_size[3], requires_grad=True)
+            a = a.clone() 
+            if self.gpu_available :
+                a = a.cuda()
+            return a
+
+        if len(input_size) == 3:
+            a = torch.randn(input_size[0], input_size[1], input_size[2], requires_grad=True)
+            a = a.clone()
+            if self.gpu_available :
+                a = a.cuda()
+            return a
+    
+        if len(input_size) == 2:
+            a = torch.randn(input_size[0], input_size[1], requires_grad=True)
+            a = a.clone()
+            if self.gpu_available:
+                 a = a.cuda()
+            return a
+
+    def get_grad_output(self, input_size):
+        if len(input_size) == 4:
+            a = torch.randn(input_size[0], input_size[1], input_size[2], input_size[3], requires_grad=True)
+            if self.gpu_available :
+                a = a.cuda()
+            return a
+
+        if len(input_size) == 3:
+            a = torch.randn(input_size[0], input_size[1], input_size[2], requires_grad=True)
+            if self.gpu_available :
+                a = a.cuda()
+            return a
+    
+        if len(input_size) == 2:
+            a = torch.randn(input_size[0], input_size[1], requires_grad=True)
+            if self.gpu_available:
+                 a = a.cuda()
+            return a
+
     def generate_time(self, layer, x, iter=10):
         if self.gpu_available:
             x = x.cuda()
@@ -160,7 +203,7 @@ class PyModuleInstrumentation():
         
         output_wm1 = layer(x)
         output_wm2 = layer(x)
-        
+       
         print ("INFO: Running forward .. ")
         torch.cuda.synchronize()
         start_time = time.time()
@@ -171,9 +214,35 @@ class PyModuleInstrumentation():
         output_size = output_wm2.size()
         
         backward_time = 0
+        if isinstance(layer, nn.ReLU):
+            m = nn.Sequential(layer)
+            if self.gpu_available:
+                m = m.cuda()
+            x_size = x.size()
+            a = self.get_intermediate_input(x_size)
+            output = m(a)
+
+            print ("INFO: Running backward warmup")
+            torch.cuda.synchronize()
+            start_time_bk_w = time.time()
+            output.sum().backward(retain_graph=True)
+            torch.cuda.synchronize()
+            print ("OK: Backward warmup finished.")
+
+            o_size = output.size()
+            grad_o_new = self.get_grad_output(o_size)
+
+            print ("INFO: Running backward")
+            torch.cuda.synchronize()
+            start_time_bk = time.time()
+            for i in range(2):
+                output.backward(grad_o_new, retain_graph=True)
+            print ("OK: Backward finished.")
+
+            backward_time = time.time() - start_time_bk 
+            
         return forward_time, backward_time, output_size
             
-        
     def generate_layerwise_profile_info(self):
         
         x = self.get_input()
@@ -221,7 +290,9 @@ class PyModuleInstrumentation():
             
             print ("------------------------ Layer num {} ---------------------- ".format(i))
             print (layer)
+            print ("Input size is : {}".format(x.size()))
             forward_time , backward_time, output_size = self.generate_time(layer, x)
+            print ("Ouptut size is : {}".format(output_size))
             layer_data['forward_time'] = forward_time
             layer_data['backward_time'] = backward_time
             layer_data['input_size'] = x.size()
