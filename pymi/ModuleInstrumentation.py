@@ -214,7 +214,7 @@ class PyModuleInstrumentation():
         output_size = output_wm2.size()
         
         backward_time = 0
-        if isinstance(layer, nn.ReLU) or isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AdaptiveAvgPool2d):
+        if isinstance(layer, nn.ReLU) or isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AdaptiveAvgPool2d) or isinstance(layer, nn.Dropout):
             m = nn.Sequential(layer)
             if self.gpu_available:
                 m = m.cuda()
@@ -235,10 +235,24 @@ class PyModuleInstrumentation():
             print ("INFO: Running backward")
             torch.cuda.synchronize()
             start_time_bk = time.time()
-            for i in range(2):
+            for i in range(iter):
                 output.backward(grad_o_new, retain_graph=True)
-            print ("OK: Backward finished.")
+            print ("OK: Backward path finished.")
+            backward_time = time.time() - start_time_bk
 
+        else:
+            grad_output = self.get_grad_output(output_size)
+            print ("INFO: Running backward warmup.")
+            output_wm2.backward(grad_output, retain_graph=True)
+            print ("INFO: Backward warmup finished.")
+
+            print ("INFO: Running backward..")
+            torch.cuda.synchronize()
+            start_time_bk = time.time()
+            for j in range(iter):
+                output_wm2.backward(grad_output, retain_graph=True)
+            torch.cuda.synchronize()
+            print ("OK: Backward path finished.")
             backward_time = time.time() - start_time_bk 
             
         return forward_time, backward_time, output_size
