@@ -3,6 +3,9 @@ py-mi is a tool on top of Pytorch module (nn.Module). This tool collects the nec
 Also, this module doesn't use any gpu related profiling tools underneath like nvprof to collect the information. 
 This can be used on any GPU or CPU that supports pytorch.
 
+## Contents
+
+
 ## Pre-requisites:
 
 Make sure to have the following installed.
