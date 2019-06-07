@@ -6,7 +6,9 @@ This can be used on any GPU or CPU that supports pytorch.
 Note : Currently, this tool only supports FP32 computation.
 
 ## Contents
-
+* [Pre-requisites](https://github.com/lcskrishna/py-mi#pre-requisites)
+* [How to use the tool in python scripts](https://github.com/lcskrishna/py-mi#how-to-use-this-tool-in-your-python-scripts-)
+* [Run an example](https://github.com/lcskrishna/py-mi#to-run-a-small-demo-run-the-following-example)
 
 ## Pre-requisites:
 
