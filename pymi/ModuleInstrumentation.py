@@ -9,7 +9,7 @@ import time
 import random
 
 class PyModuleInstrumentation():
-    def __init__(self, network, input_size, iterations, is_debug):
+    def __init__(self, network, input_size, iterations=10, is_debug=False):
         self.net = network
         self.input_size = input_size
         self.iterations = iterations
