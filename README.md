@@ -47,10 +47,10 @@ To get the layerwise timings profile for a particular network use the following:
 mi.PyModuleInstrumentation(net, input_size, iterations, is_debug)
 ```
 In the above command,
-net is the network created using nn.Module, for example torchvision.models.alexnet()
-input_size is an array of input size like ([1,3,224,224])
-iterations is the number of iterations you wish to profile.
-is_debug is a flag to show debug mesasges (True/False)
+* net is the network created using nn.Module, for example torchvision.models.alexnet()
+* input_size is an array of input size like ([1,3,224,224])
+* iterations is the number of iterations you wish to profile.
+* is_debug is a flag to show debug mesasges (True/False)
 
 ## To run a small demo, run the following example
 
