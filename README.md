@@ -1,7 +1,5 @@
 # py-mi (A Pytorch Module Instrumentor)
 py-mi is a tool on top of Pytorch module (nn.Module). This tool collects the necessary statistics related to a Module created using pytorch.
-Currently, This module generates layerwise profiling information without using any specific gpu related tools. 
-
 Also, this module doesn't use any gpu related profiling tools underneath like nvprof to collect the information. 
 This can be used on any GPU or CPU that supports pytorch.
 
@@ -16,7 +14,7 @@ To install pytorch and torchvision follow the below links:
 1. pytorch :[Official pytorch site](https://github.com/pytorch/pytorch) or [Pytorch on ROCM](https://github.com/ROCmSoftwarePlatform/pytorch/wiki/Building-PyTorch-for-ROCm)
 2. torchvision : [vision](https://github.com/pytorch/vision)
 
-Or use the pre-installed pytorch dockers. 
+Or use the pre-installed pytorch dockers available from their sites respectively.
 
 ## Getting Started
 
