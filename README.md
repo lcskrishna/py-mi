@@ -3,6 +3,8 @@ py-mi is a tool on top of Pytorch module (nn.Module). This tool collects the nec
 Also, this module doesn't use any gpu related profiling tools underneath like nvprof to collect the information. 
 This can be used on any GPU or CPU that supports pytorch.
 
+Note : Currently, this tool only supports FP32 computation.
+
 ## Contents
 
 
@@ -32,6 +34,27 @@ python setup.py install
 
 This will install a python module named pymi.
 
-## How to use this tool in your python scripts :'
+## How to use this tool in your python scripts :
 
-Coming soon .. 
+Import the following in your python scripts that you want to do get some analytics.
+```
+import pymi
+from pymi import ModuleInstrumentation as mi
+```
+
+To get the layerwise timings profile for a particular network use the following:
+```
+mi.PyModuleInstrumentation(net, input_size, iterations, is_debug)
+```
+In the above command,
+net is the network created using nn.Module, for example torchvision.models.alexnet()
+input_size is an array of input size like ([1,3,224,224])
+iterations is the number of iterations you wish to profile.
+is_debug is a flag to show debug mesasges (True/False)
+
+## To run a small demo, run the following example
+
+```
+python generate_layerwise_benchmarks.py --network alexnet
+```
+
