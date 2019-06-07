@@ -44,8 +44,7 @@ from pymi import ModuleInstrumentation as mi
 
 To get the layerwise timings profile for a particular network use the following:
 ```
-layer_profiler = mi.PyModuleInstrumentation(net, input_size, iterations, is_debug)
-layer_profiler.generate_layerwise_profile_info()
+mi.PyModuleInstrumentation(net, input_size, iterations, is_debug).generate_layerwise_profile_info()
 ```
 In the above command,
 * net is the network created using nn.Module, for example torchvision.models.alexnet()
