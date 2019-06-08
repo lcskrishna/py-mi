@@ -225,8 +225,10 @@ class PyModuleInstrumentation():
             layer_data['backward_time'] = backward_time
             layer_data['input_size'] = x.size()
             layer_data['output_size'] = output_size
+            layer_data['layer_type'] = layer
             net_layer_data[i] = layer_data
             print ("Forward Time is {}".format(forward_time))
             print ("Backward Time is : {}".format(backward_time))
 
         return net_layer_data
+
