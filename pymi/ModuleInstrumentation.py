@@ -107,6 +107,8 @@ class PyModuleInstrumentation():
             is_different = True
         elif isinstance(layer, nn.Dropout):
             is_different = True
+        elif isinstance(layer, nn.AvgPool2d):
+            is_different = True
 
         return is_different
 
@@ -221,14 +223,36 @@ class PyModuleInstrumentation():
             print ("Input size is : {}".format(x.size()))
             forward_time , backward_time, output_size = self.generate_time(layer, x)
             print ("Ouptut size is : {}".format(output_size))
-            layer_data['forward_time'] = forward_time
-            layer_data['backward_time'] = backward_time
+            layer_data['forward_time'] = forward_time * 1000
+            layer_data['backward_time'] = backward_time * 1000
             layer_data['input_size'] = x.size()
             layer_data['output_size'] = output_size
             layer_data['layer_type'] = layer
             net_layer_data[i] = layer_data
-            print ("Forward Time is {}".format(forward_time))
-            print ("Backward Time is : {}".format(backward_time))
+            print ("Forward Time is {} ms".format(forward_time))
+            print ("Backward Time is : {} ms".format(backward_time))
 
         return net_layer_data
 
+    def get_layer_name(self, layer):
+       
+        if isinstance(layer, nn.Conv2d):
+            return "Conv2d"
+        elif isinstance(layer, nn.ReLU):
+            return "ReLU"
+        elif isinstance(layer, nn.MaxPool2d):
+            return "MaxPool2d"
+        elif isinstance(layer, nn.AdaptiveAvgPool2d):
+            return "AdaptiveAvgPool2d"
+        elif isinstance(layer, nn.Dropout):
+            return "Dropout"
+        elif isinstance(layer, nn.Linear):
+            return "Linear" 
+
+    def generate_statistics(self, net_layer_data):
+        
+        print ("INFO: Total number of layer data collected is : {}".format(net_layer_data.size()))
+        
+        for i in range(len(net_layer_data)):
+            layer_data = net_layer_data[i]
+            
