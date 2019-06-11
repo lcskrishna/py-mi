@@ -229,8 +229,8 @@ class PyModuleInstrumentation():
             layer_data['output_size'] = output_size
             layer_data['layer_type'] = layer
             net_layer_data[i] = layer_data
-            print ("Forward Time is {} ms".format(forward_time))
-            print ("Backward Time is : {} ms".format(backward_time))
+            print ("Forward Time is {} ms".format(forward_time * 1000))
+            print ("Backward Time is : {} ms".format(backward_time * 1000))
 
         return net_layer_data
 
@@ -247,12 +247,21 @@ class PyModuleInstrumentation():
         elif isinstance(layer, nn.Dropout):
             return "Dropout"
         elif isinstance(layer, nn.Linear):
-            return "Linear" 
+            return "Linear"
+        elif isinstance(layer, nn.AvgPool2d):
+            return "AvgPool2d"
+        elif isinstance(layer, nn.BatchNorm2d):
+            return "BatchNorm"
 
     def generate_statistics(self, net_layer_data):
         
-        print ("INFO: Total number of layer data collected is : {}".format(net_layer_data.size()))
+        print ("INFO: Total number of layer data collected is : {}".format(len(net_layer_data)))
         
-        for i in range(len(net_layer_data)):
-            layer_data = net_layer_data[i]
-            
+        #for i in range(len(net_layer_data)):
+        #    layer_data = net_layer_data[i]
+        #    layer = layer_data['layer_type']
+        #    #layer_type = self.get_layer_name(layer)
+        #    print (layer)           
+        layer_data = net_layer_data[0]
+        print (layer_data)
+         
