@@ -113,6 +113,7 @@ class PyModuleInstrumentation():
         return is_different
 
     def generate_time(self, layer, x, iter=10):
+        print ("INFO: Total iterations {}".format(iter))
         if self.gpu_available:
             x = x.cuda()
             layer = layer.cuda()
@@ -171,7 +172,7 @@ class PyModuleInstrumentation():
             print ("OK: Backward path finished.")
             backward_time = time.time() - start_time_bk 
             
-        return forward_time, backward_time, output_size
+        return forward_time/iter, backward_time/iter, output_size
             
     def generate_layerwise_profile_info(self):
         
@@ -221,7 +222,7 @@ class PyModuleInstrumentation():
             print ("------------------------ Layer num {} ---------------------- ".format(i))
             print (layer)
             print ("Input size is : {}".format(x.size()))
-            forward_time , backward_time, output_size = self.generate_time(layer, x)
+            forward_time , backward_time, output_size = self.generate_time(layer, x, self.iterations)
             print ("Ouptut size is : {}".format(output_size))
             layer_data['forward_time'] = forward_time * 1000
             layer_data['backward_time'] = backward_time * 1000
@@ -229,8 +230,9 @@ class PyModuleInstrumentation():
             layer_data['output_size'] = output_size
             layer_data['layer_type'] = layer
             net_layer_data[i] = layer_data
-            print ("Forward Time is {} ms".format(forward_time * 1000))
-            print ("Backward Time is : {} ms".format(backward_time * 1000))
+            print ("Forward Time is {} ms/iter".format(forward_time * 1000))
+            print ("Backward Time is : {} ms/iter".format(backward_time * 1000))
+            layer_data = {}
 
         return net_layer_data
 
