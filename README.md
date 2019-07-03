@@ -7,7 +7,10 @@ Note : Currently, this tool only supports FP32 computation.
 
 ## Contents
 
-[Pre-requisites](##Pre-requisites)
+* [Pre-requisites](#pre-requisites)
+* [Getting Started](#getting-started)
+* [Usage](#how-to-use-this-tool-in-your-python-scripts-)
+* [Demo](#to-run-a-small-demo-run-the-following-example)
 
 ## Pre-requisites:
 
