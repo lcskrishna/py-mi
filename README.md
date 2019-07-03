@@ -7,6 +7,7 @@ Note : Currently, this tool only supports FP32 computation.
 
 ## Contents
 
+[Pre-requisites](##Pre-requisites)
 
 ## Pre-requisites:
 
