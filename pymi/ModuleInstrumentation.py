@@ -255,15 +255,21 @@ class PyModuleInstrumentation():
         elif isinstance(layer, nn.BatchNorm2d):
             return "BatchNorm"
 
-    def generate_statistics(self, net_layer_data):
+    def generate_statistics(self, net_layer_data, output_prefix = "net"):
         
         print ("INFO: Total number of layer data collected is : {}".format(len(net_layer_data)))
         
-        #for i in range(len(net_layer_data)):
-        #    layer_data = net_layer_data[i]
-        #    layer = layer_data['layer_type']
-        #    #layer_type = self.get_layer_name(layer)
-        #    print (layer)           
-        layer_data = net_layer_data[0]
-        print (layer_data)
-         
+        fs = open(output_prefix + '.csv', 'w')
+        
+        for i in range(len(net_layer_data)):
+            layer_data = net_layer_data[i]
+            layer_type = str(layer_data['layer_type'])
+            forward_time = str(layer_data['forward_time'])
+            backward_time = str(layer_data['backward_time'])
+            str1_fwd = str(i) + ',' + 'Fwd' + ',' + forward_time + ',' + layer_type + '\n' 
+            str2_bwd = ' ' + ',' + 'Bwd' +  ',' + backward_time + ',' + ' ' +  '\n'
+            fs.write(str1_fwd)
+            fs.write(str2_bwd)
+
+        fs.close()
+        print ("OK: Summary of times is written into {}.csv".format(output_prefix))    

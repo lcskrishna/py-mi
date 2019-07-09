@@ -18,8 +18,9 @@ def run_layerwise_benchmark(network_name, batch_size, iterations, is_gpu_availab
     input_size = [1, 3, 224, 224]
     is_debug = True
     layer_timer = mi.PyModuleInstrumentation(net, input_size, iterations, is_debug)
-    layer_timer.generate_layerwise_profile_info()
+    net_data = layer_timer.generate_layerwise_profile_info()
     print ("OK: Finished generating layerwise benchmark for network : {}".format(network_name))
+    layer_timer.generate_statistics(net_data)
 
 def main():
     network_name = args.network

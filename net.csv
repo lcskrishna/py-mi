@@ -1,0 +1,42 @@
+0,Fwd,0.359916687012,Conv2d(3, 64, kernel_size=(11, 11), stride=(4, 4), padding=(2, 2))
+ ,Bwd,4143.92371178, 
+1,Fwd,0.0588178634644,ReLU(inplace=True)
+ ,Bwd,1.12328529358, 
+2,Fwd,0.18458366394,MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+ ,Bwd,0.964188575745, 
+3,Fwd,0.207996368408,Conv2d(64, 192, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2))
+ ,Bwd,0.493216514587, 
+4,Fwd,0.0608205795288,ReLU(inplace=True)
+ ,Bwd,0.904297828674, 
+5,Fwd,0.186586380005,MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+ ,Bwd,0.91860294342, 
+6,Fwd,0.252199172974,Conv2d(192, 384, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+ ,Bwd,0.387907028198, 
+7,Fwd,0.19359588623,ReLU(inplace=True)
+ ,Bwd,0.755500793457, 
+8,Fwd,0.194096565247,Conv2d(384, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+ ,Bwd,0.509715080261, 
+9,Fwd,0.0755071640015,ReLU(inplace=True)
+ ,Bwd,0.701904296875, 
+10,Fwd,0.14979839325,Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+ ,Bwd,0.888895988464, 
+11,Fwd,0.0743865966797,ReLU(inplace=True)
+ ,Bwd,0.749802589417, 
+12,Fwd,0.188088417053,MaxPool2d(kernel_size=3, stride=2, padding=0, dilation=1, ceil_mode=False)
+ ,Bwd,0.748085975647, 
+13,Fwd,0.137710571289,AdaptiveAvgPool2d(output_size=(6, 6))
+ ,Bwd,0.396108627319, 
+14,Fwd,0.291800498962,Dropout(p=0.5)
+ ,Bwd,0.670003890991, 
+15,Fwd,1.33209228516,Linear(in_features=9216, out_features=4096, bias=True)
+ ,Bwd,5.16328811646, 
+16,Fwd,0.0901937484741,ReLU(inplace=True)
+ ,Bwd,0.427913665771, 
+17,Fwd,0.273895263672,Dropout(p=0.5)
+ ,Bwd,0.665998458862, 
+18,Fwd,0.423192977905,Linear(in_features=4096, out_features=4096, bias=True)
+ ,Bwd,2.97698974609, 
+19,Fwd,0.0749826431274,ReLU(inplace=True)
+ ,Bwd,0.426912307739, 
+20,Fwd,0.361609458923,Linear(in_features=4096, out_features=1000, bias=True)
+ ,Bwd,0.97188949585, 
