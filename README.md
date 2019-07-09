@@ -48,9 +48,18 @@ from pymi import ModuleInstrumentation as mi
 
 To get the layerwise timings profile for a particular network use the following:
 ```
-mi.PyModuleInstrumentation(net, input_size, iterations, is_debug).generate_layerwise_profile_info()
+net_layer_data = mi.PyModuleInstrumentation(net, input_size, iterations, is_debug).generate_layerwise_profile_info()
 ```
-In the above command,
+Here net_layer_data is a map that contains layer_type, forward_time, backward_time, layer_num.
+
+
+To generate a summary into a csv file for forward and backward with configurations use the following after generating layerwise info.:
+```
+mi.PyModuleInstrumentation(net, input_size, iterations, is_debug).generate_statistics(net_layer_data, <output_prefix str>)
+```
+
+
+In the above commands,
 * net is the network created using nn.Module, for example torchvision.models.alexnet()
 * input_size is an array of input size like ([1,3,224,224])
 * iterations is the number of iterations you wish to profile.
